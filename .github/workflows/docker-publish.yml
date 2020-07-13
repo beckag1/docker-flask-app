@@ -15,7 +15,7 @@ on:
 
 env:
   # TODO:               Change variable to your image's name.
-  IMAGE_NAME:           beckag1/docker-flask-app/my-image
+  IMAGE_REPOSITORY:           beckag1/docker-flask-app
 
 
 jobs:
@@ -43,8 +43,6 @@ jobs:
     runs-on:            ubuntu-latest
 
     steps:
-      - run: echo $IMAGE_NAME
-        
       - name:           Checkout the repo
         uses:           actions/checkout@v2
 
@@ -54,5 +52,5 @@ jobs:
           username:     ${{ github.actor }} # automatically use the username of the user that triggered the workflow run
           password:     ${{ secrets.GITHUB_TOKEN }} # automatically-generated GITHUB_TOKEN secret for the password
           registry:     docker.pkg.github.com # must be set to docker.pkg.github.com
-          repository:   $IMAGE_NAME # must be set in the format OWNER/REPOSITORY/IMAGE_NAME
+          repository:   ${{ env.IMAGE_REPOSITORY }}/my-image # must be set in the format OWNER/REPOSITORY/IMAGE_NAME
           tag_with_ref: true
