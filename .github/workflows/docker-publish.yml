@@ -1,0 +1,55 @@
+name:                   Docker
+
+on:
+  push:
+    # Publish `master` as Docker `latest` image.
+    branches:
+      - master
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+
+env:
+  # TODO:               Change variable to your image's name.
+  IMAGE:                beckag1/docker-flask-app
+
+jobs:
+  # Run tests.
+  test:
+    runs-on:            ubuntu-latest
+
+    steps:
+      - uses:           actions/checkout@v2
+
+      - name:           Run tests
+        run:            |
+          if [ -f docker-compose.test.yml ]; then
+            docker-compose --file docker-compose.test.yml build
+            docker-compose --file docker-compose.test.yml run sut
+          else
+            docker build . --file Dockerfile
+          fi
+
+  # Push image to GitHub Packages.
+  push:
+    # Ensure test job passes before pushing image.
+    needs:              test
+
+    runs-on:            ubuntu-latest
+
+    steps:
+      - name:           Checkout the repo
+        uses:           actions/checkout@v2
+
+      - name:           Push to GitHub Packages
+        uses:           docker/build-push-action@v1
+        with:
+          username:     ${{ github.actor }} # automatically use the username of the user that triggered the workflow run
+          password:     ${{ secrets.GITHUB_TOKEN }} # automatically-generated GITHUB_TOKEN secret for the password
+          registry:     docker.pkg.github.com # must be set to docker.pkg.github.com
+          repository:   $IMAGE # must be set in the format OWNER/REPOSITORY/IMAGE_NAME
+          tag_with_ref: true
