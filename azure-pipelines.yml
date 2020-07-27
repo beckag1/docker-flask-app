@@ -10,7 +10,7 @@ resources:
 
 variables:
   imageRepository:                 'dockerflaskapp'
-  dockerRegistryServiceConnection: 'beckagtestregistry'
+  dockerRegistryServiceConnection: 'beckagtestregistry.azurecr.io'
   tag: 'latest'
 
 stages:
