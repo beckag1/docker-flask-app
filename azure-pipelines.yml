@@ -10,12 +10,12 @@ resources:
 
 variables:
   imageRepository:                 'dockerflaskapp'
-  dockerRegistryServiceConnection: 'beckaacr.azurecr.io'
+  dockerRegistryName: 'beckaacr'
   tag: 'latest'
 
 stages:
-- stage: Build
-  displayName: Build image
+- stage: Build and Deploy
+  displayName: Build and Deploy image
   jobs:  
   - job: Build
     displayName: Build
@@ -23,10 +23,15 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     - task: Docker@2
-      displayName: Build and push Docker image to container registry
+      displayName: 'Build an image'
       inputs:
-        command:                       buildAndPush
-        repository:                    $(imageRepository)
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        containerRegistry:             $(dockerRegistryServiceConnection)
-        tags:                          $(tag)
+        containerRegistry: $(dockerRegistryName)
+        repository: $(imageRepository)
+        command: 'build'
+        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+    - task: Docker@2
+      displayName: 'Push an image'
+      inputs:
+        containerRegistry: $(dockerRegistryName)
+        repository: $(imageRepository)
+        command: push
