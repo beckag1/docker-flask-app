@@ -10,7 +10,7 @@ resources:
 
 variables:
   imageRepository:                 'dockerflaskapp'
-  dockerRegistryName: 'beckaacr'
+  dockerRegistryName: 'BeckaAzureCR'
   tag: 'latest'
 
 stages:
