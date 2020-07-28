@@ -8,30 +8,33 @@ trigger:
 resources:
 - repo: self
 
+pool:
+  vmImage:                         'Ubuntu-16.04'
+
 variables:
   imageRepository:                 'dockerflaskapp'
   dockerRegistryName: 'BeckaAzureCR'
   tag: 'latest'
 
-stages:
-- stage: Build
-  displayName: Build and Deploy image
-  jobs:  
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: Docker@2
-      displayName: 'Build an image'
-      inputs:
-        containerRegistry: $(dockerRegistryName)
-        repository: $(imageRepository)
-        command: 'build'
-        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-    - task: Docker@2
-      displayName: 'Push an image'
-      inputs:
-        containerRegistry: $(dockerRegistryName)
-        repository: $(imageRepository)
-        command: push
+steps:
+  - script: |
+      if [ -f docker-compose.test.yml ]; then
+        docker-compose --file docker-compose.test.yml build
+        docker-compose --file docker-compose.test.yml run sut
+      fi
+    displayName: 'Run tests'
+  
+  - task: Docker@2
+    displayName: 'Build Docker image'
+    inputs:
+      containerRegistry: $(dockerRegistryName)
+      repository: $(imageRepository)
+      command: 'build'
+      Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+
+  - task: Docker@2
+    displayName: 'Push Docker Image to Container Registry'
+    inputs:
+      containerRegistry: $(dockerRegistryName)
+      repository: $(imageRepository)
+      command: push
