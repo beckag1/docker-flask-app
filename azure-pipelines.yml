@@ -14,7 +14,7 @@ variables:
   tag: 'latest'
 
 stages:
-- stage: Build and Deploy
+- stage: Build
   displayName: Build and Deploy image
   jobs:  
   - job: Build
