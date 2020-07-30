@@ -1,25 +1,29 @@
+####################################################
+# Docker example for Actions                       #
+####################################################
+
 name:                   Docker
 
 on:
   push:
     # Publish `master` as Docker `latest` image.
-    branches:
-      - master
+    branches:           [ master ]
 
     # Publish `v1.2.3` tags as releases.
     tags:
       - v*
 
-  # Run tests for any PRs.
   pull_request:
+    branches:           [ master ]
 
 env:
-  # TODO:               Change variable to your image's name.
-  IMAGE_REPOSITORY:           beckag1/docker-flask-app
+  # Change variables to your repo and image name - must be lowercase and set in the format OWNER/REPOSITORY/IMAGE_NAME
+  IMAGE_REPOSITORY:     owner/repository
+  IMAGE_NAME:           your-image-name
 
 
 jobs:
-  # Run tests.
+  # Optional - Run tests
   test:
     runs-on:            ubuntu-latest
 
@@ -31,26 +35,23 @@ jobs:
           if [ -f docker-compose.test.yml ]; then
             docker-compose --file docker-compose.test.yml build
             docker-compose --file docker-compose.test.yml run sut
-          else
-            docker build . --file Dockerfile
           fi
 
-  # Push image to GitHub Packages.
+  # Build image and push to GitHub Packages.
   push:
-    # Ensure test job passes before pushing image.
-    needs:              test
-
     runs-on:            ubuntu-latest
 
     steps:
-      - name:           Checkout the repo
+      - if:             github.ref == 'refs/heads/master' && github.event_name == 'push'
+        name:           Checkout the repo
         uses:           actions/checkout@v2
-
-      - name:           Push to GitHub Packages
+        
+      - if:             github.ref == 'refs/heads/master' && github.event_name == 'push'
+        name:           Push to GitHub Packages
         uses:           docker/build-push-action@v1
         with:
-          username:     ${{ github.actor }} # automatically use the username of the user that triggered the workflow run
-          password:     ${{ secrets.GITHUB_TOKEN }} # automatically-generated GITHUB_TOKEN secret for the password
-          registry:     docker.pkg.github.com # must be set to docker.pkg.github.com
-          repository:   ${{ env.IMAGE_REPOSITORY }}/my-image # must be set in the format OWNER/REPOSITORY/IMAGE_NAME
+          username:     ${{ github.actor }}
+          password:     ${{ secrets.GITHUB_TOKEN }}
+          registry:     docker.pkg.github.com
+          repository:   ${{ env.IMAGE_REPOSITORY }}/${{ env.IMAGE_NAME }}
           tag_with_ref: true
